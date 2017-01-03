@@ -195,6 +195,7 @@ public class CallLogs extends Fragment {
             callLogItems.clear();
             callLogItems.addAll(getCallLog());
             callLogsAdapter.notifyDataSetChanged();
+
         }
 
         @Override
