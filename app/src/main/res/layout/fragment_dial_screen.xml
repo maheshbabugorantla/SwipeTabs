@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="@dimen/activity_vertical_margin">
+
+    <EditText
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:inputType="phone"
+        android:labelFor="@+id/phoneNumber"
+        android:id="@+id/phoneNumber"
+        android:maxLength="10"
+        android:layout_toEndOf="@+id/flags"
+        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+
+    <Spinner
+        android:layout_width="100dp"
+        android:layout_height="45dp"
+        android:id="@+id/flags"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dialButton"
+        android:id="@+id/Dial"
+        android:layout_marginTop="26dp"
+        android:layout_below="@+id/flags"
+        android:layout_centerHorizontal="true"
+        android:onClick="dialPhone"/>
+
+</RelativeLayout>
