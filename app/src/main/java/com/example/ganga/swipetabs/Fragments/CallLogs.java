@@ -198,6 +198,7 @@ public class CallLogs extends Fragment {
 
         }
 
+
         @Override
         public boolean deliverSelfNotifications() {
             return true;
