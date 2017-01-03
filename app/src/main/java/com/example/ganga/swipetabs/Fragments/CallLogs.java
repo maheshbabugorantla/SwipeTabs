@@ -48,6 +48,8 @@ public class CallLogs extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        System.out.println("Inside onCreateView");
+
         View rootView = inflater.inflate(R.layout.fragment_call_logs, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.callsLog);
@@ -55,7 +57,7 @@ public class CallLogs extends Fragment {
         listView.setAdapter(callLogAdapter);
 
         contentResolver = mContext.getContentResolver();
-        callLogsObserver = new CallLogsObserver(new Handler(), callLogs, callLogAdapter);
+        callLogsObserver = new CallLogsObserver(null, callLogs, callLogAdapter);
         contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogsObserver);
 
         return rootView;
@@ -72,13 +74,19 @@ public class CallLogs extends Fragment {
     public void onPause() {
         super.onPause();
         System.out.println("Inside onPause");
-        contentResolver.unregisterContentObserver(callLogsObserver);
     }
 
     @Override
     public void onStop() {
         super.onStop();
         System.out.println("Inside onStop");
+        //contentResolver.unregisterContentObserver(callLogsObserver);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        contentResolver.unregisterContentObserver(callLogsObserver);
     }
 
     @Override
