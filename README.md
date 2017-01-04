@@ -6,7 +6,8 @@
 
 #####Dialer Screen
 
-<img src="images/screenshot1.png" />
+<img src="images/screenshot1.png" height="550" width="350" />
+
 
 ###APIs Used
 <ol>
