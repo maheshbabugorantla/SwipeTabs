@@ -8,7 +8,6 @@
 
 <img src="images/screenshot1.png" height="750" width="450" />
 
-
 ###APIs Used
 <ol>
     <li><a href="http://square.github.io/picasso/"> Picasso </a></li>

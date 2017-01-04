@@ -36,4 +36,17 @@ public class LogItem {
     public Uri getImageUri() {
         return imageUri;
     }
+
+    @Override
+    public String toString() {
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("Name ")
+                     .append(contactName)
+                     .append(" , Phone: ")
+                     .append(contactPhone);
+
+        return stringBuilder.toString();
+    }
 }

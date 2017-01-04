@@ -37,6 +37,8 @@ public class CallLogs extends Fragment {
     ContentResolver contentResolver;
     ContentObserver callLogsObserver;
 
+    CallLogAdapter callLogAdapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,20 +55,27 @@ public class CallLogs extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_call_logs, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.callsLog);
-        CallLogAdapter callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, getCallLog());
+        callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, getCallLog());
         listView.setAdapter(callLogAdapter);
 
         contentResolver = mContext.getContentResolver();
-        callLogsObserver = new CallLogsObserver(null, callLogs, callLogAdapter);
+        callLogsObserver = new CallLogsObserver(null); //, callLogs, callLogAdapter);
         contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogsObserver);
 
         return rootView;
     }
 
+
+
     @Override
     public void onResume() {
         super.onResume();
         System.out.println("Inside onResume");
+
+        /*for(LogItem logItem: callLogs) {
+            System.out.println(logItem.toString());
+        }*/
+
         contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogsObserver);
     }
 
@@ -80,7 +89,12 @@ public class CallLogs extends Fragment {
     public void onStop() {
         super.onStop();
         System.out.println("Inside onStop");
-        //contentResolver.unregisterContentObserver(callLogsObserver);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        System.out.println("Inside onSaveInstanceState");
     }
 
     @Override
@@ -177,27 +191,38 @@ public class CallLogs extends Fragment {
          * @param handler The handler to run {@link #onChange} on, or null if none.
          */
 
-        ArrayList<LogItem> callLogItems;
-        CallLogAdapter callLogsAdapter;
+        //ArrayList<LogItem> callLogItems;
+        //CallLogAdapter callLogsAdapter;
 
-        public CallLogsObserver(Handler handler, ArrayList<LogItem> contactItems, CallLogAdapter callLogAdapter) {
+        public CallLogsObserver(Handler handler) { //, ArrayList<LogItem> contactItems, CallLogAdapter callLogAdapter) {
             super(handler);
-            this.callLogItems = contactItems;
-            this.callLogsAdapter = callLogAdapter;
+            //this.callLogItems = contactItems;
+            //this.callLogsAdapter = callLogAdapter;
         }
 
         @Override
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
 
-            System.out.println("Inside OnChange");
+            System.out.println("Inside onChange");
 
-            callLogItems.clear();
-            callLogItems.addAll(getCallLog());
-            callLogsAdapter.notifyDataSetChanged();
+            callLogs.clear();
+            callLogs.addAll(getCallLog());
 
+            getActivity().runOnUiThread (
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println("Inside Runnable");
+                            callLogAdapter.notifyDataSetChanged();
+                        }
+                    }
+            );
+
+            for(LogItem logItem: callLogs) {
+                System.out.println(logItem.toString());
+            }
         }
-
 
         @Override
         public boolean deliverSelfNotifications() {
