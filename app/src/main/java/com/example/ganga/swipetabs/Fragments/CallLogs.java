@@ -32,19 +32,23 @@ import java.util.ArrayList;
 public class CallLogs extends Fragment {
 
     Context mContext;
+
+    ListView listView;
     ArrayList<LogItem> callLogs = new ArrayList<>();
 
     ContentResolver contentResolver;
     ContentObserver callLogsObserver;
-
     CallLogAdapter callLogAdapter;
+
+    boolean [] contentObservers = {false, false};
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         checkPermissions();
-        callLogs = getCallLog();
+        //callLogs = getCallLog();
     }
 
     @Override
@@ -54,13 +58,15 @@ public class CallLogs extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_call_logs, container, false);
 
-        ListView listView = (ListView) rootView.findViewById(R.id.callsLog);
+        listView = (ListView) rootView.findViewById(R.id.callsLog);
         callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, getCallLog());
         listView.setAdapter(callLogAdapter);
 
         contentResolver = mContext.getContentResolver();
         callLogsObserver = new CallLogsObserver(null); //, callLogs, callLogAdapter);
         contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogsObserver);
+        contentObservers[0] = true;
+        contentObservers[1] = false;
 
         return rootView;
     }
@@ -70,25 +76,33 @@ public class CallLogs extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        System.out.println("Inside onResume");
-
         /*for(LogItem logItem: callLogs) {
             System.out.println(logItem.toString());
         }*/
-
-        contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogsObserver);
+        if(!contentObservers[0]) {
+            System.out.println("Inside onResume");
+            contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogsObserver);
+            contentObservers[0] = true;
+            contentObservers[1] = false;
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        System.out.println("Inside onPause");
+
     }
 
     @Override
     public void onStop() {
         super.onStop();
         System.out.println("Inside onStop");
+
+ /*       if (!contentObservers[1]) {
+            contentResolver.unregisterContentObserver(callLogsObserver);
+            contentObservers[1] = true;
+            contentObservers[0] = false;
+        } */
     }
 
     @Override
@@ -99,8 +113,16 @@ public class CallLogs extends Fragment {
 
     @Override
     public void onDestroy() {
+
         super.onDestroy();
-        contentResolver.unregisterContentObserver(callLogsObserver);
+
+        System.out.println("Inside onDestroy");
+
+        if (!contentObservers[1]) {
+            contentResolver.unregisterContentObserver(callLogsObserver);
+            contentObservers[1] = true;
+            contentObservers[0] = false;
+        }
     }
 
     @Override
@@ -206,18 +228,18 @@ public class CallLogs extends Fragment {
 
             System.out.println("Inside onChange");
 
-            callLogs.clear();
-            callLogs.addAll(getCallLog());
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateCallLog();
+                }
+            });
+        }
 
-            getActivity().runOnUiThread (
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            System.out.println("Inside Runnable");
-                            callLogAdapter.notifyDataSetChanged();
-                        }
-                    }
-            );
+        public void updateCallLog() {
+            callLogs = getCallLog();
+            callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, callLogs);
+            listView.setAdapter(callLogAdapter);
 
             for(LogItem logItem: callLogs) {
                 System.out.println(logItem.toString());
