@@ -236,7 +236,7 @@ public class CallLogs extends Fragment {
             });
         }
 
-        public void updateCallLog() {
+        private void updateCallLog() {
             callLogs = getCallLog();
             callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, callLogs);
             listView.setAdapter(callLogAdapter);

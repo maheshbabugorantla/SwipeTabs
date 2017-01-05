@@ -33,6 +33,14 @@ public class Contacts extends Fragment {
     ArrayList<ContactItem> contacts;
     Context mContext;
 
+    ContactsAdapter contactsAdapter;
+    ListView contactsList;
+
+    ContentResolver contentResolver;
+    ContentObserver contentObserver;
+
+    boolean registeredFlag = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,14 +54,36 @@ public class Contacts extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_contacts_screen, container, false);
 
-        ListView contactsList = (ListView) rootView.findViewById(R.id.contactsList);
-        ContactsAdapter contactsAdapter = new ContactsAdapter(getContext(), R.layout.contact_item, contacts);
+        contactsList = (ListView) rootView.findViewById(R.id.contactsList);
+        contactsAdapter = new ContactsAdapter(getContext(), R.layout.contact_item, contacts);
         contactsList.setAdapter(contactsAdapter);
 
-        ContentResolver contentResolver = mContext.getContentResolver();
-        contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, new ContactsObserver(new Handler(), contacts, contactsAdapter));
+        contentResolver = mContext.getContentResolver();
+        contentObserver = new ContactsObserver(new Handler());
+        contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contentObserver);
 
+        registeredFlag = true;
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(!registeredFlag) {
+            contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contentObserver);
+            registeredFlag = false;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if(registeredFlag) {
+            contentResolver.unregisterContentObserver(contentObserver);
+            registeredFlag =  false;
+        }
     }
 
     @Override
@@ -205,8 +235,7 @@ public class Contacts extends Fragment {
     public Uri getPhotoUri(long contactId) {
 
         Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
-        Uri photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
-        return photoUri;
+        return Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
     }
 
     private void checkPermissions() {
@@ -225,13 +254,9 @@ public class Contacts extends Fragment {
          * @param handler The handler to run {@link #onChange} on, or null if none.
          */
 
-        ArrayList<ContactItem> contactItems;
-        ContactsAdapter contactsAdapter;
 
-        public ContactsObserver(Handler handler, ArrayList<ContactItem> contactItems, ContactsAdapter contactsAdapter) {
+        public ContactsObserver(Handler handler) {
             super(handler);
-            this.contactItems = contactItems;
-            this.contactsAdapter = contactsAdapter;
         }
 
         @Override
@@ -240,9 +265,14 @@ public class Contacts extends Fragment {
 
             System.out.println("Inside OnChange");
 
-            contactItems.clear();
-            contactItems.addAll(readContacts());
-            contactsAdapter.notifyDataSetChanged();
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    contacts.clear();
+                    contacts.addAll(readContacts());
+                    contactsAdapter.notifyDataSetChanged();
+                }
+            });
         }
 
         @Override
