@@ -260,8 +260,10 @@ public class Contacts extends Fragment {
         }
 
         @Override
-        public void onChange(boolean selfChange) {
+        public void onChange(boolean selfChange, Uri uri) {
             super.onChange(selfChange);
+
+            System.out.println("Changed Content: " + uri);
 
             System.out.println("Inside OnChange");
 

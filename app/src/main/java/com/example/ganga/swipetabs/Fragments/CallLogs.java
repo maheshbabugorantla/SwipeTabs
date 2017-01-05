@@ -48,7 +48,7 @@ public class CallLogs extends Fragment {
         super.onCreate(savedInstanceState);
 
         checkPermissions();
-        //callLogs = getCallLog();
+        callLogs = getCallLog();
     }
 
     @Override
@@ -59,19 +59,17 @@ public class CallLogs extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_call_logs, container, false);
 
         listView = (ListView) rootView.findViewById(R.id.callsLog);
-        callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, getCallLog());
+        callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, callLogs);
         listView.setAdapter(callLogAdapter);
 
         contentResolver = mContext.getContentResolver();
-        callLogsObserver = new CallLogsObserver(null); //, callLogs, callLogAdapter);
+        callLogsObserver = new CallLogsObserver(new Handler()); //, callLogs, callLogAdapter);
         contentResolver.registerContentObserver(CallLog.Calls.CONTENT_URI, true, callLogsObserver);
         contentObservers[0] = true;
         contentObservers[1] = false;
 
         return rootView;
     }
-
-
 
     @Override
     public void onResume() {
@@ -85,30 +83,6 @@ public class CallLogs extends Fragment {
             contentObservers[0] = true;
             contentObservers[1] = false;
         }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        System.out.println("Inside onStop");
-
- /*       if (!contentObservers[1]) {
-            contentResolver.unregisterContentObserver(callLogsObserver);
-            contentObservers[1] = true;
-            contentObservers[0] = false;
-        } */
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        System.out.println("Inside onSaveInstanceState");
     }
 
     @Override
@@ -213,9 +187,6 @@ public class CallLogs extends Fragment {
          * @param handler The handler to run {@link #onChange} on, or null if none.
          */
 
-        //ArrayList<LogItem> callLogItems;
-        //CallLogAdapter callLogsAdapter;
-
         public CallLogsObserver(Handler handler) { //, ArrayList<LogItem> contactItems, CallLogAdapter callLogAdapter) {
             super(handler);
             //this.callLogItems = contactItems;
@@ -223,8 +194,10 @@ public class CallLogs extends Fragment {
         }
 
         @Override
-        public void onChange(boolean selfChange) {
+        public void onChange(boolean selfChange, Uri uri) {
             super.onChange(selfChange);
+
+            System.out.println("Changed Content: " + uri);
 
             System.out.println("Inside onChange");
 
@@ -237,13 +210,10 @@ public class CallLogs extends Fragment {
         }
 
         private void updateCallLog() {
-            callLogs = getCallLog();
-            callLogAdapter = new CallLogAdapter(getContext(), R.layout.call_log_item, callLogs);
-            listView.setAdapter(callLogAdapter);
 
-            for(LogItem logItem: callLogs) {
-                System.out.println(logItem.toString());
-            }
+            callLogs.clear();
+            callLogs.addAll(getCallLog());
+            callLogAdapter.notifyDataSetChanged();
         }
 
         @Override
